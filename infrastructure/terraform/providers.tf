@@ -1,15 +1,5 @@
-terraform {
-  required_providers {
-    digitalocean = {
-      source  = "digitalocean/digitalocean"
-      version = ">= 2.0.0"
-    }
-    http = {
-      source  = "hashicorp/http"
-      version = "3.4.2"
-    }
-  }
+provider "azurerm" {
+  features {}
 }
-provider "digitalocean" {
-  token = var.do_token
-}
+
+data "azurerm_client_config" "current" {}
