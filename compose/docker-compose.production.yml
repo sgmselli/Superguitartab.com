@@ -26,6 +26,7 @@ services:
   client:
     container_name: client
     image: superguitartab.azurecr.io/app:client-latest
+    expose:
       - "3000"
     networks:
       - frontend
@@ -33,6 +34,7 @@ services:
   tabs-api:
     container_name: tabs-api
     image: superguitartab.azurecr.io/app:tabs-api-latest
+    env_file:
       - .env.tabs-api
     expose:
       - "8000"
