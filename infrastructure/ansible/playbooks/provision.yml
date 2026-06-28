@@ -1,6 +1,6 @@
 ---
-- name: Provision Droplet with Docker
-  hosts: droplet
+- name: Provision VM with dependency and Docker installations
+  hosts: vm01
   become: yes
   tasks:
 

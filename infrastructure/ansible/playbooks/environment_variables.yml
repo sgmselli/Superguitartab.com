@@ -1,27 +1,18 @@
 ---
 - name: create environment variable files and populate variables
-  hosts: droplet
+  hosts: vm01
   become: yes
   tasks:
 
     - name: Ensure project directory exists
       file:
-        path: /root/guitar-tabs-app
+        path: /home/mattsellings
         state: directory
         mode: '0755'
-      
-    - name: Create .env.db file for database credentials
-      copy:
-        dest: /root/guitar-tabs-app/.env.db
-        content: |
-          POSTGRES_DB={{ database_name }}
-          POSTGRES_USER={{ database_user }}
-          POSTGRES_PASSWORD={{ database_password }}
-          POSTGRES_HOST={{ database_host }}
 
     - name: Create .env.tabs-api file for tabs-api environment variables
       copy:
-        dest: /root/guitar-tabs-app/.env.tabs-api
+        dest: /home/mattsellings/.env.tabs-api
         content: |
           APP_ENV=PRODUCTION
           DATABASE_NAME={{ database_name }}
