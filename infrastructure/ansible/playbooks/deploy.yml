@@ -1,27 +1,29 @@
 ---
 - name: pull images from registry and run docker compose
-  hosts: droplet
+  hosts: vm01
   become: yes
   tasks:
     - name: Ensure project directory exists
       file:
-        path: /root/guitar-tabs-app
+        path: /home/mattsellings
         state: directory
         mode: '0755'
 
     - name: Copy docker-compose file
       copy:
         src: ../../../compose/docker-compose.production.yml
-        dest: /root/guitar-tabs-app/docker-compose.yml
+        dest: /home/mattsellings/docker-compose.production.yml
     
-    - name: Log in to DigitalOcean registry
+    - name: Log in to Azure Container Registry
       community.docker.docker_login:
-        registry_url: registry.digitalocean.com
-        username: doctl
-        password: "{{ lookup('env','DO_API_TOKEN') }}"
+        registry_url: superguitartab.azurecr.io
+        username: "{{ acr_username }}"
+        password: "{{ acr_password }}"
 
     - name: Pull and start containers
       community.docker.docker_compose_v2:
-        project_src: /root/guitar-tabs-app/
+        project_src: /home/mattsellings
+        files:
+          - docker-compose.production.yml
         pull: always
         state: present
