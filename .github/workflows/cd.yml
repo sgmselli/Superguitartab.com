@@ -3,7 +3,7 @@ name: Continuous Development
 on:
   push:
     branches:
-      - update-build-and-deploy-ci-cd
+      - main
     paths-ignore:
       - 'infrastructure/**'
       - 'docs/**'
