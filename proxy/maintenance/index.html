@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maintenance in Progress</title>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #020617;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at top, #1e293b, var(--bg));
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: linear-gradient(180deg, #020617, #020617cc);
+      padding: 3rem 2.5rem;
+      max-width: 480px;
+      width: 100%;
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 1rem;
+      font-size: 1.8rem;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      margin: 0.5rem 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    .status {
+      margin-top: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--accent);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    footer {
+      margin-top: 2.5rem;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <h1>Superguitartab.com will be back shortly</h1>
+
+    <p>
+      We&rsquo;re performing scheduled maintenance to improve reliability
+      and performance.
+    </p>
+
+    <p>
+      During this time the service will be temporarily unavailable.
+    </p>
+
+    <div class="status">
+      <div class="dot"></div>
+      Maintenance in progress
+    </div>
+
+    <footer>
+      Thank you for your patience.
+    </footer>
+  </div>
+</body>
+</html>

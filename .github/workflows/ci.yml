@@ -1,0 +1,75 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - '**'
+    paths-ignore:
+      - 'infrastructure/**'
+      - 'docs/**'
+      - 'README.md'
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:24.0.5
+        options: --privileged
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Download wait-for-it.sh
+        run: |
+          curl -o wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
+          chmod +x wait-for-it.sh
+
+      - name: Build and start test environment
+        env:
+          APP_ENV: TEST
+        run: |
+          docker compose -f ./compose/docker-compose.yml up --build -d
+
+      - name: Wait for API service
+        run: |
+          ./wait-for-it.sh localhost:8000 -t 30
+
+      - name: Wait for Postgres
+        run: |
+          docker compose -f ./compose/docker-compose.yml exec db \
+            bash -c "until pg_isready -U postgres; do sleep 1; done"
+
+      - name: Run migrations
+        run: |
+          docker compose -f ./compose/docker-compose.yml exec tabs-api \
+            alembic -c app/db/migrations/alembic.ini upgrade head
+
+      - name: Seed database
+        run: |
+          docker compose -f ./compose/docker-compose.yml exec tabs-api \
+            python -m app.db.seed.seed_tab_data
+
+      - name: Run API tests
+        run: |
+          docker compose -f ./compose/docker-compose.yml exec tabs-api pytest
+
+      - name: Install Playwright
+        run: |
+          cd client
+          npm ci
+          npx playwright install
+
+      - name: Run end-to-end tests
+        run: |
+          cd client
+          npx playwright test --workers=1
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f ./compose/docker-compose.yml down

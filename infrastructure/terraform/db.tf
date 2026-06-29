@@ -8,6 +8,8 @@ resource "azurerm_postgresql_flexible_server" "db" {
   administrator_login    = var.db_admin_username
   administrator_password = var.db_admin_password
 
+  zone = "3"
+
   storage_mb = var.db_storage_size_mb
 
   sku_name = var.db_size
