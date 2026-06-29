@@ -8,9 +8,7 @@ We use PostgreSQL for our relational database
 
 ## Production database
 
-Our production database runs inside the same Digital Ocean Droplet VPS as the rest of our app.
-
-When the app scales, we will scale horizontally by moving the database to its own seperate VPS along with a Redis cache for fast API calls and performance.
+Our production database runs on Azure Database for Postgres.
 
 ## Migrations
 

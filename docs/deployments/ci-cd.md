@@ -16,7 +16,7 @@ This pipeline tests, builds, and deploys the application to our production envir
 **What this pipeline does (step by step)**:
 - Runs tests
 - Builds all our docker containers 
-- Pushes the docker containers to our Digital Ocean container registry
+- Pushes the docker containers to our Azure Container Registry
 - Uses Ansible to:
   - SSH into our virtual machine where our app runs.
   - Push our `docker-compose.production.yml` file

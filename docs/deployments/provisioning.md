@@ -11,11 +11,12 @@ We use these tools for our infrastructure provisioning:
 ## Terraform
 
 We use Terraform to create and manage our cloud resources:
-- Droplet (Digital Ocean VPS)
-- Droplet Firewalls (VPS security)
-- Container Registry 
+- Azure Virtual Machine
+- Network Security Groups
+- Azure Container Registry 
 - Virtual Private Network
+- Azure Database for Postgres
 
 ## Ansible
 
-We use Ansible to install the latest versions of Docker and Docker Compose.
+We use Ansible to install the latest versions of Docker and Docker Compose, create production env file on our virtual machine, and to deploy the application
