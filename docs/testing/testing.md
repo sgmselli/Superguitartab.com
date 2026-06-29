@@ -6,7 +6,7 @@ Testing
 
 We run unit, integration, and end-to-end automated tests. These should be run before committing and pushing to branches.
 
-These tests will also run as part of our deploy pipeline, where failed tests will result in no deployment.
+These tests will also run as part of our CI pipeline which is ran on every Git push.
 
 ## End-to-end tests
 
@@ -17,10 +17,6 @@ To run the tests:
 - Ensure Playwright is installed
 - run `npx playwright test`
 
-## Integration tests
-
-Coming soon
-
 ## Unit tests
 
-Coming soon
+We use Pytest for our unit tests

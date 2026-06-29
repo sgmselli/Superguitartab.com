@@ -11,22 +11,21 @@ This serves as a reference for developers, maintainers, and contributors who nee
 
 # Technologies Used
 
-SuperGuitarTab is built using a modern, containerized full-stack architecture.  
+Superguitartab is built using a modern, containerized full-stack architecture.  
 Below is an overview of the primary technologies and why they are used:
 
-| Layer | Technology | Purpose                                                                                                  |
-|-------|------------|----------------------------------------------------------------------------------------------------------|
-| **Frontend** | React | UI rendering, user interaction                                                                           |
-| **Static Hosting / Reverse Proxy** | Nginx | Serves React build, reverse-proxies API requests, caches static assets and performs gzip file compression. |
-| **Backend API** | FastAPI | Core API, business logic, file access                                                      |
-| **ORM / Database Layer** | SQLAlchemy | Defines models and handles DB interactions                                                               |
-| **Database** | PostgreSQL | Persistent structured data storage                                                                       |
-| **Storage** | DigitalOcean Spaces | PDF/tab file storage (S3 compatible)                                                                     |
-| **Containerization** | Docker & Docker Compose | Packaging and running all services                                                                       |
-| **Infrastructure Platform** | DigitalOcean | Hosting, networking, storage, registry                                                                   |
-| **CI/CD** | GitHub Actions | Automated builds, testing, deployments                                                                   |
-| **Container Registry** | DigitalOcean Container Registry | Stores Docker images for deployment                                                                      |
-| **VPC** | DigitalOcean VPC | Secure private networking between services                                                               |
+| Layer                              | Technology               | Purpose                                                                                                                    |
+|------------------------------------|--------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| **Frontend**                       | React                    | UI rendering, user interaction                                                                                             |
+| **Static Hosting / Reverse Proxy** | Nginx                    | Terminates SSL, Serves React build, reverse-proxies API requests, caches static assets and performs gzip file compression. |
+| **Backend API**                    | FastAPI                  | Core API, business logic, file access                                                                                      |
+| **ORM / Database Layer**           | SQLAlchemy               | Defines models and handles DB interactions                                                                                 |
+| **Relational Database**            | PostgreSQL               | Persistent structured data storage                                                                                         |
+| **Storage**                        | Azure Blob Storage       | PDF/tab file storage                                                                                                       |
+| **Containerization**               | Docker & Docker Compose  | Packaging and running all services                                                                                         |
+| **Cloud Platform**                 | Azure                    | Hosting, networking, storage, registry                                                                                     |
+| **CI/CD**                          | GitHub Actions           | Automated builds, testing, deployments                                                                                     |
+| **Container Registry**             | Azure Container Registry | Stores Docker images for deployment                                                                                        |
 
 ---
 
@@ -40,17 +39,20 @@ Nginx sits at the entry point of the Droplet and handles all incoming traffic.
 - Routes `/api/*` paths to the FastAPI container  
 - Routes `/*` paths to React container
 - Handles gzipping, caching headers, and performance tuning  
-- Integrates with SSL (Let’s Encrypt or DO certificates)
+- Integrates with SSL
 
 Nginx ensures clean separation between frontend and backend layers.
 
-We have two different Nginx configuration:
+We have three different Nginx configuration:
 - Development
 - Production
+- Maintenance
 
 Development handles only port 80
 
 Production handles SSL termination and is open on port 443 and 80. Port 80 redirects to port 443.
+
+Maintenance serves a static web page for when the site needs down time
 
 ---
 
@@ -82,18 +84,7 @@ It runs inside a Docker container using **Uvicorn** for async performance.
 
 ---
 
-## SQLAlchemy (ORM)
-SQLAlchemy provides Pythonic access to the PostgreSQL database.
-
-### Used For:
-- Declaring models (e.g., `Tab`)  
-- Schema migrations (using Alembic)  
-- Querying, updating, and deleting records  
-- Enforcing data types and constraints  
-
----
-
-## PostgreSQL (Database)
+## PostgreSQL (Relational Database)
 PostgreSQL stores the application's relational data, including:
 
 - Guitar tab metadata  
@@ -102,51 +93,31 @@ PostgreSQL stores the application's relational data, including:
 - Download counts  
 - Future users/auth tables  
 
-The database runs as a containerized service inside the Droplet.
+The database is hosted as Azure's service Azure Database For Postgres 
 
 ---
 
-## DigitalOcean Spaces (Object Storage)
+## Azure Blob Storage (Object Storage)
 Spaces is used for file storage:
 - Guitar tab PDFs
 
 ---
 
 ## Docker & Docker Compose (Containerization)
-All services: frontend, backend, database, reverse-proxy —run inside Docker containers.
+All services: frontend, backend, reverse-proxy —run inside Docker containers.
 
 ---
 
-## DigitalOcean Infrastructure
-SuperGuitarTab is hosted on DigitalOcean using:
-
-### **Droplet**
-Runs all Dockerized services.
-
-### **VPC**
-Provides private networking and improved security.
-
-### **Firewall**
-Limits inbound traffic to HTTP/HTTPS and your SSH IP.
-
-### **Spaces**
-Stores tab files.
-
-### **Container Registry (DOCR)**
-Stores images built by CI/CD.
-
----
-
-## GitHub Actions (CI/CD)
+## CI/CD (Github Actions)
 GitHub Actions automates:
 
 - Running tests  
 - Building Docker images  
 - Pushing images to Registry  
-- Deploying to the Droplet (e.g., via SSH + Docker Compose pulls)
+- Deploying to the Azure virtual machine (e.g., via SSH + Docker Compose pulls)
 
 ---
 
 ## Architecture Diagram
 
-![superguitartab.com High Level Architecture](../architecture/high-level-architecture-diagram.png)
+![superguitartab.com Architecture Diagram](../architecture/current-azure-architecture-diagram.png)

@@ -2,7 +2,7 @@ services:
 
   proxy:
     container_name: proxy
-    image: registry.digitalocean.com/guitar-tabs-registry/app:proxy-latest
+    image: superguitartab.azurecr.io/app:proxy-latest
     volumes:
       - ./certbot/www/:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/letsencrypt/:ro
@@ -25,7 +25,7 @@ services:
 
   client:
     container_name: client
-    image: registry.digitalocean.com/guitar-tabs-registry/app:client-latest
+    image: superguitartab.azurecr.io/app:client-latest
     expose:
       - "3000"
     networks:
@@ -33,30 +33,16 @@ services:
 
   tabs-api:
     container_name: tabs-api
-    image: registry.digitalocean.com/guitar-tabs-registry/app:tabs-api-latest
+    image: superguitartab.azurecr.io/app:tabs-api-latest
     env_file:
       - .env.tabs-api
     expose:
       - "8000"
-    depends_on:
-      - db
-    networks:
-      - backend
-
-  db:
-    container_name: db
-    image: postgres:18
-    env_file:
-      - .env.db
-    volumes:
-      - /var/lib/postgresql
-    ports:
-      - "5432:5432"
     networks:
       - backend
 
   worker:
-    image: registry.digitalocean.com/guitar-tabs-registry/app:tabs-api-latest
+    image: superguitartab.azurecr.io/app:tabs-api-latest
     env_file:
       - .env.tabs-api
     command: celery -A app.celery.task_queue.celery_task_queue worker --loglevel=info
@@ -73,7 +59,6 @@ services:
       - backend
 
 volumes:
-  db_data:
   letsencrypt:
   letsencrypt-www:
 
