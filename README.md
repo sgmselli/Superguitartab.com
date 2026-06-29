@@ -10,30 +10,55 @@ Please visit out website [superguitartab.com](https://www.superguitartab.com).
 
 ---
 
+## Preview
+
+![Superguitartab Preview Video](./docs/preview/superguitartab-preview.gif)
+
 ## Tech Stack
 
 ### Frontend
-- **React** – Single-page application (SPA) for the frontend where the compiled React build runs on an Nginx server
-- **Tailwind CSS** – Styling and layout  
+- **React**
+- **Tailwind CSS** 
 
 ### Backend
-- **FastAPI** – Python backend powering all API routes running on a Uvicorn server
-- **SQLAlchemy** – Object Relational Mapper (ORM) to interact with postgres database
+- **FastAPI** 
+- **SQLAlchemy** 
+- **Pydantic**
+- **Celery**
 
 ### Database
-- **PostgreSQL** – Primary relational database  
+- **PostgreSQL**
 
 ### Infrastructure
-- **Docker & Docker Compose** – Containerization of all services  
-- **Nginx Reverse Proxy** – Routes incoming traffic and handles TLS termination  
-- **DigitalOcean Droplet** – Production VPS docker containers run in
-- **DigitalOcean Spaces** – S3-compatible object storage to store music sheets
+- **Azure** 
+- **Docker**
+- **Terraform**
+- **Ansible**
+- **CI/CD (Github Actions)**
+
+### Testing
+- **Pytest**
+- **Playwright**
 
 ---
 
-## Architecture Diagram
+## Current Architecture Diagram and scaling
 
-![superguitartab.com High Level Architecture](./docs/architecture/high-level-architecture-diagram.png)
+![Superguitartab Current Architecture Diagram](./docs/architecture/current-azure-architecture-diagram.png)
+
+This is the current architecture of the application. 
+
+Running on Azure, there is a single virtual machine hosting a container for an NGINX reverse proxy, the React frontend, and the Python FastAPI server.
+
+This virtual machine is connected to an Azure Database for PostgreSQL.
+
+The reason for the single virtual machine is an engineering decision due to cost. The application is currently providing a free service, so the cost of the application needs to be as low as possible.
+
+When the application becomes paid, we will horizontally scale the software to:
+
+- The React build being served on the object storage and via a cdn.
+- A load balancer in front of three virtual machines, each hosting its own api server. This is to prevent DDOS and to handle more traffic.
+- Keep architecture stateless by making Redis, for sessions, centralised and outside the servers.
 
 ---
 
