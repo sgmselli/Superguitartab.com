@@ -6,7 +6,7 @@ This is the code for Superguitartab.com. We are a web application that allows us
 ---
 
 ## I want to download music sheets
-Please visit out website [superguitartab.com](https://www.superguitartab.com).
+Please visit our website [superguitartab.com](https://www.superguitartab.com).
 
 ---
 
