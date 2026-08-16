@@ -6,9 +6,7 @@ import { TabViewer } from './components/TabViewer';
 import { Download } from 'lucide-react';
 import { ContentNotFound } from '../../components/ContentNotFound';
 import { Loading } from '../../components/Loading';
-import type { DifficultyLevel } from '../../constants/difficulty';
-import type { Genre } from '../../constants/genre';
-import type { Style } from '../../constants/style';
+import type { TabResponse } from '../../types/tab';
 import usePageTitle from '../../hooks/usePageTitle';
 import { formatTitle } from '../../utils/wordFormatting';
 import { useAuth } from '../../contexts/auth';
@@ -22,53 +20,38 @@ const Song: React.FC = () => {
 
     const [numPages, setNumPages] = useState<number>(0);
 
-    const [songName, setSongName] = useState<string | null>(null);
-    const [artist, setArtist] = useState<string | null>(null);
-    const [album, setAlbum] = useState<string | null>(null);
-    const [genre, setGenre] = useState<Genre | null>(null);
-    const [difficulty, setDifficulty] = useState<DifficultyLevel | null>(null);
-    const [description, setDescription] = useState<string | null>(null);
-    const [lyricsIncluded, setLyricsIncluded] = useState<boolean | null>(null);
-    const [style, setStyle] = useState<Style | null>(null);
-    const [fileName, setFileName] = useState<string | null>(null);
-    const [fileUrl, setFileUrl] = useState<string | null>(null);
+    const [song, setSong] = useState<TabResponse | null>(null);
 
     const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
     const [showDownloadedModal, setShowDownloadedModal] = useState<boolean>(false);
 
     const [loading, setLoading] = useState<boolean>(false);
-    // const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const { isAuthenticated } = useAuth();
 
-    usePageTitle(`${songName} music tabular` || "Loading...");
+    usePageTitle(song ? `${song.song_name} music tabular` : "Loading...");
 
     if (!id) {
         return <p>Invalid tab ID</p>;
     }
 
-    useEffect(() => {
-        const handleFetch = async () => {
-            setLoading(true);
-            try {
-                const data = await getTabData(id);
-                setSongName(data.song_name);
-                setArtist(data.artist);
-                setAlbum(data.album);
-                setGenre(data.genre);
-                setStyle(data.style);
-                setDifficulty(data.difficulty);
-                setDescription(data.description);
-                setLyricsIncluded(data.lyrics_included)
-                setFileName(data.file_name);
-                setFileUrl(data.file_url);
-                
-            } catch (err: any) {
-                // setError("");
-            } finally {
-                setLoading(false);
-            }
+    const handleFetch = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await getTabData(id);
+            setSong(data);
+
+        } catch (err: any) {
+            console.error("Failed to load tab:", err);
+            setError("Something went wrong loading this tab. Please try again.");
+        } finally {
+            setLoading(false);
         }
+    }
+
+    useEffect(() => {
         handleFetch();
     }, [id])
 
@@ -100,7 +83,7 @@ const Song: React.FC = () => {
             const link = document.createElement("a");
             link.href = url;
 
-            link.download = fileName || "superguitartab.com-tab";
+            link.download = song?.file_name || "superguitartab.com-tab";
 
             document.body.appendChild(link);
             link.click();
@@ -123,7 +106,15 @@ const Song: React.FC = () => {
         );
     }
 
-    if (!fileUrl) {
+    if (error) {
+        return (
+            <div className='flex flex-col items-center w-full mt-20 text-center'>
+                <p className='text-error text-lg font-semibold'>{error}</p>
+            </div>
+        );
+    }
+
+    if (!song || !song.file_url) {
         return <ContentNotFound />;
     }
 
@@ -134,27 +125,27 @@ const Song: React.FC = () => {
             >
                 <div className='flex-1 flex flex-col gap-4 lg:max-w-[540px]'>
                     <div className='lg:hidden flex flex-col justify-center items-center bg-gray-100 p-5 gap-4 rounded-lg'>
-                        <h1 className='text-2xl primary-color font-semibold '>Download {songName} now!</h1>
+                        <h1 className='text-2xl primary-color font-semibold '>Download {song.song_name} now!</h1>
                         <button aria-label='Download song button for mobile' className='btn btn-lg w-full surface-color primary-color-bg rounded-lg' onClick={handleDownload}>Download tab</button>
                     </div>
-                    <TabViewer pdfUrl={fileUrl} numPages={numPages} setNumPages={setNumPages} />
+                    <TabViewer pdfUrl={song.file_url} numPages={numPages} setNumPages={setNumPages} />
                 </div>
                 <div
                     className='flex-1 flex flex-col text-color'
                 >
                     <div className='flex flex-col gap-2'>
-                        <h1 className='text-4xl font-bold'>{songName}</h1>
-                        <h3 className='text-lg font-semibold'>Composed by <span className='font-bold'>{artist} </span>- Digital sheet tab</h3>
+                        <h1 className='text-4xl font-bold'>{song.song_name}</h1>
+                        <h3 className='text-lg font-semibold'>Composed by <span className='font-bold'>{song.artist} </span>- Digital sheet tab</h3>
                     </div>
-            
+
                     <p className='text-md font-light mt-3'>Includes unlimited printable PDF downloads</p>
 
-                    <p className='text-md font-light mt-5' >{description}</p>
+                    <p className='text-md font-light mt-5' >{song.description}</p>
 
                     <div className='flex flex-row gap-4 mt-8'>
                         <button aria-label='Download song button' className='btn btn-xl flex flex-row gap-3 text-lg surface-color border-0 secondary-color-bg rounded-lg' onClick={handleDownload}><Download size={20} /> Download</button>
                     </div>
-                    
+
                     <div className='flex flex-row text-md gap-10 pt-8'>
                         <div className='flex flex-col font-semibold space-y-4'>
                             <p>Song:</p>
@@ -168,13 +159,13 @@ const Song: React.FC = () => {
                             <p>Product #:</p>
                         </div>
                         <div className='flex flex-col space-y-4'>
-                            <p>{songName}</p>
-                            <p>{artist ? artist : "No artist"}</p>
-                            <p>{album ? album : "No album"}</p>
-                            <p>{formatTitle(genre)}</p>
-                            <p>{formatTitle(style)}</p>
-                            <p>{difficulty}</p>
-                            <p>{lyricsIncluded ? "Yes" : "No"}</p>
+                            <p>{song.song_name}</p>
+                            <p>{song.artist ? song.artist : "No artist"}</p>
+                            <p>{song.album ? song.album : "No album"}</p>
+                            <p>{formatTitle(song.genre)}</p>
+                            <p>{formatTitle(song.style)}</p>
+                            <p>{song.difficulty}</p>
+                            <p>{song.lyrics_included ? "Yes" : "No"}</p>
                             <p>{numPages}</p>
                             <p>{id}</p>
                         </div>
@@ -197,7 +188,7 @@ const Song: React.FC = () => {
             <DownloadedModal
                 isOpen={showDownloadedModal}
                 onClose={() => setShowDownloadedModal(false)}
-                songName={songName}
+                songName={song.song_name}
             />
         </>
     )
