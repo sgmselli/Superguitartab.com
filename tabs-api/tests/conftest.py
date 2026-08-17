@@ -3,6 +3,7 @@ from httpx import AsyncClient, ASGITransport
 
 from app.main import app
 from app.db.session import get_session
+from app.external_services.s3_client import get_s3_client
 
 class FakeUser:
     def __init__(
@@ -44,6 +45,32 @@ async def mock_db_session():
     app.dependency_overrides[get_session] = _mock_get_session
     yield
     app.dependency_overrides.clear()
+
+@pytest_asyncio.fixture
+def fake_s3_client():
+    """
+    Override the get_s3_client dependency with an in-memory fake so router
+    tests don't have to reach into S3Client internals.
+    """
+    class FakeS3Client:
+        def __init__(self):
+            self.presigned_urls = {}
+            self.deleted_keys = []
+
+        def generate_presigned_url(self, object_name, expires_in=3600):
+            return self.presigned_urls.get(object_name, f"https://fake-s3/{object_name}")
+
+        async def upload_fileobj(self, object_name, file):
+            pass
+
+        def delete_object(self, object_name):
+            self.deleted_keys.append(object_name)
+
+    fake_client = FakeS3Client()
+
+    app.dependency_overrides[get_s3_client] = lambda: fake_client
+    yield fake_client
+    app.dependency_overrides.pop(get_s3_client, None)
 
 @pytest_asyncio.fixture
 def mock_boto_client(monkeypatch):

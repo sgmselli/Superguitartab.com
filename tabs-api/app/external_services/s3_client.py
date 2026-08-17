@@ -74,3 +74,7 @@ class S3Client:
         except Exception as e:
             Logger.log(LogLevel.ERROR, f"Error deleting object {object_name}: {e}")
             raise S3ClientException()
+
+
+def get_s3_client() -> S3Client:
+    return S3Client()

@@ -3,10 +3,9 @@ from fastapi import status
 
 from app.models.tab import Tab
 import app.services.tab_services as tab_services
-from app.external_services.s3_client import S3Client
 
 @pytest.mark.asyncio
-async def test_get_tab_success(client, monkeypatch):
+async def test_get_tab_success(client, monkeypatch, fake_s3_client):
     fake_tab = Tab(
         id=1,
         song_name="Test Tab",
@@ -23,12 +22,6 @@ async def test_get_tab_success(client, monkeypatch):
         return fake_tab
 
     monkeypatch.setattr(tab_services, "get_tab_by_id", mock_get_tab_by_id)
-
-    monkeypatch.setattr(
-        S3Client,
-        "generate_presigned_url",
-        lambda self, key: f"https://fake-s3/{key}"
-    )
 
     response = await client.get("tabs/tab/1")
 

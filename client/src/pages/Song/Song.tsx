@@ -42,10 +42,9 @@ const Song: React.FC = () => {
         try {
             const data = await getTabData(id);
             setSong(data);
-
         } catch (err: any) {
-            console.error("Failed to load tab:", err);
-            setError("Something went wrong loading this tab. Please try again.");
+            const detail = err?.response?.data?.detail;
+            setError(typeof detail === "string" ? detail : "An error occurred");
         } finally {
             setLoading(false);
         }
