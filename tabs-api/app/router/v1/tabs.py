@@ -6,7 +6,7 @@ from app.constants.genre import Genre
 from app.constants.style import Style
 from app.exceptions.s3 import S3ClientException
 from app.exceptions.tab import IncorrectFileType
-from app.external_services.s3_client import S3Client
+from app.external_services.s3_client import S3Client, get_s3_client
 from app.models.user import User
 from app.services import tab_services
 from app.schema.tab import TabResponse, TabFileUrlResponse
@@ -24,7 +24,12 @@ from app.utils.logging import Logger, LogLevel
 router = APIRouter()
 
 @router.get("/tab/{tab_id}", response_model=TabResponse)
-async def get_tab(tab_id: int, session: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_or_return_none)):
+async def get_tab(
+    tab_id: int,
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user_or_return_none),
+    s3_client: S3Client = Depends(get_s3_client),
+):
     """
     Route to fetch tab by id and return it.
     """
@@ -34,17 +39,23 @@ async def get_tab(tab_id: int, session: AsyncSession = Depends(get_session), cur
 
     try:
         if current_user:
-            presigned_url = S3Client().generate_presigned_url(tab.file_key)
+            presigned_url = s3_client.generate_presigned_url(tab.file_key)
         else:
-            presigned_url = S3Client().generate_presigned_url(tab.preview_file_key)
+            presigned_url = s3_client.generate_presigned_url(tab.preview_file_key)
     except S3ClientException:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Failed to get tab")
+    
     tab_response = TabResponse.model_validate(tab)
     tab_response.file_url = presigned_url
     return tab_response
 
 @router.get("/tab/{tab_id}/download")
-async def get_tab(tab_id: int, session: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user_or_raise_http_error)):
+async def get_tab(
+    tab_id: int,
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user_or_raise_http_error),
+    s3_client: S3Client = Depends(get_s3_client),
+):
     """
     Route to fetch tab file url and increment downloads
     """
@@ -53,7 +64,7 @@ async def get_tab(tab_id: int, session: AsyncSession = Depends(get_session), cur
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Tab not found")
 
     try:
-        presigned_url = S3Client().generate_presigned_url(tab.file_key)
+        presigned_url = s3_client.generate_presigned_url(tab.file_key)
     except S3ClientException:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Failed to download tab")
 
@@ -70,8 +81,7 @@ async def get_tabs(
     """
     Route to fetch all tabs of a specific genre with pagination.
     """
-    tabs = await tab_services.get_tabs(session, limit, offset)
-    return  [TabResponse.model_validate(tab) for tab in tabs]
+    return await tab_services.get_tabs(session, limit, offset)
 
 @router.get("/genre/{genre}", response_model=list[TabResponse])
 async def get_tabs_by_genre(
@@ -84,7 +94,7 @@ async def get_tabs_by_genre(
     Route to fetch all tabs of a specific genre with pagination.
     """
     tabs = await tab_services.get_tabs_by_genre(genre, session, limit, offset)
-    return  [TabResponse.model_validate(tab) for tab in tabs if tab.genre == genre]
+    return [tab for tab in tabs if tab.genre == genre]
 
 @router.get("/style/{style}", response_model=list[TabResponse])
 async def get_tabs_by_style(
@@ -97,7 +107,7 @@ async def get_tabs_by_style(
     Route to fetch all tabs of a specific style with pagination.
     """
     tabs = await tab_services.get_tabs_by_style(style, session, limit, offset)
-    return  [TabResponse.model_validate(tab) for tab in tabs if tab.style == style]
+    return [tab for tab in tabs if tab.style == style]
 
 @router.post("/upload", status_code=HTTP_201_CREATED)
 async def upload_tab_pdf(
@@ -146,5 +156,4 @@ async def search_tabs(
     query: str,
     session: AsyncSession = Depends(get_session)
 ):
-    tabs = await tab_services.search_tabs(query, session)
-    return [TabResponse.model_validate(tab) for tab in tabs]
+    return await tab_services.search_tabs(query, session)
