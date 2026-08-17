@@ -43,7 +43,7 @@ async def get_tab(
         else:
             presigned_url = s3_client.generate_presigned_url(tab.preview_file_key)
     except S3ClientException:
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Failed to get tab")
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get tab")
     
     tab_response = TabResponse.model_validate(tab)
     tab_response.file_url = presigned_url
@@ -66,7 +66,7 @@ async def get_tab(
     try:
         presigned_url = s3_client.generate_presigned_url(tab.file_key)
     except S3ClientException:
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Failed to download tab")
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to download tab")
 
     await register_user_tab_download(current_user.id, tab_id, session)
 
